@@ -2,17 +2,97 @@
 
 # 判断两值不相同后，才用异或交换
 
-## 链表 8
-3. 输入一个链表，按链表值从尾到头的顺序返回一个ArrayList。
-` .add(0,item) `
-14. 输入一个链表，输出该链表中倒数第k个结点。
-` 双指针单向，一个先走k步 `
-15. 输入一个链表，反转链表后，输出新链表的表头。
-` 双指针缓存交换 `
-16. 输入两个单调递增的链表，输出两个链表合成后的链表，当然我们需要合成后的链表满足单调不减规则。
-` 递归(规则:弹出两个链表头，最小的那个，并返回) `
-25. 输入一个复杂链表（每个节点中有节点值，以及两个指针，一个指向下一个节点，另一个特殊指针指向任意一个节点），返回结果为复制后复杂链表的head。（注意，输出结果中请不要返回参数中的节点引用，否则判题程序会直接返回空）
-` HashMap记录新创建的next链表，再创建random链表 `
+## 链表 8(5)
+3. 从尾到头打印链表
+>输入一个链表，按链表值从尾到头的顺序返回一个ArrayList。
+
+` 递归。底部(初始状态)返回空数组，逐层向上插入链表值。` 
+```
+public ArrayList<Integer> printListFromTailToHead(ListNode listNode) {
+    if(listNode == null) return new ArrayList<Integer>();
+    ArrayList<Integer> lst = printListFromTailToHead(listNode.next);
+    lst.add(listNode.val);
+    return lst;
+}
+```
+
+14. 链表中倒数第k个节点
+>输入一个链表，输出该链表中倒数第k个结点。
+
+` 双指针(theK, head)单向，theK先走k步 `
+```
+public ListNode FindKthToTail(ListNode head,int k) {
+    ListNode theK = head;
+    int i = 0;
+    for(; theK != null; i++){
+        theK = theK.next;
+        if(i >= k) head = head.next;
+    }
+    return i >= k ? head : null;
+}
+```
+
+15. 反转链表
+>输入一个链表，反转链表后，输出新链表的表头。
+
+` 双指针(pre, holdNext)缓存交换 `
+```
+public ListNode ReverseList(ListNode head) {
+    ListNode pre = null, holdNext;
+    while(head != null){
+        holdNext = head.next;
+        head.next = pre;
+        pre = head;
+        head = holdNext;
+    }
+    return pre;
+}
+```
+
+16. 合并两个排序的链表
+>输入两个单调递增的链表，输出两个链表合成后的链表，当然我们需要合成后的链表满足单调不减规则。
+
+` 递归。弹出两个链表头，最小的那个并指向下层递归，并返回) `
+```
+public ListNode Merge(ListNode list1,ListNode list2) {
+    if(list1 == null) return list2;
+    if(list2 == null) return list1;
+    if(list1.val < list2.val){
+        list1.next = Merge(list1.next, list2);
+        return list1;
+    } 
+    list2.next = Merge(list1, list2.next);
+    return list2;
+}
+```
+
+25. 复杂链表的复制
+>输入一个复杂链表（每个节点中有节点值，以及两个指针，一个指向下一个节点，另一个特殊指针指向任意一个节点），返回结果为复制后复杂链表的head。（注意，输出结果中请不要返回参数中的节点引用，否则判题程序会直接返回空）
+
+` HashMap记录新创建的next链表，再从HashMap读取链接random链表 `
+```
+public RandomListNode Clone(RandomListNode pHead){
+    if(pHead == null) return null;
+    HashMap<RandomListNode,RandomListNode> map = new HashMap<RandomListNode,RandomListNode>();
+    RandomListNode newLst = new RandomListNode(pHead.label), head = pHead;
+    map.put(pHead, newLst);
+    while(head.next != null){
+        newLst.next = new RandomListNode(head.next.label);
+        newLst = newLst.next;
+        head = head.next;
+        map.put(head,newLst);
+    }
+    head = pHead;
+    newLst = map.get(pHead);
+    while(head != null){
+        newLst.random = map.get(head.random);
+        newLst = newLst.next;
+        head = head.next;
+    }
+    return map.get(pHead);
+}
+```
+
 36. 输入两个链表，找出它们的第一个公共结点。
 ` 双指针单向，到底交替 `
 55. 给一个链表，若其中包含环，请找出该链表的环的入口结点，否则，输出null。
@@ -20,21 +100,113 @@
 56. 在一个排序的链表中，存在重复的结点，请删除该链表中重复的结点，重复的结点不保留，返回链表头指针。 例如，链表1->2->3->3->4->4->5 处理后为 1->2->5
 ` 递归 `
 ----
-## 数组 15
-1. 在一个二维数组中（每个一维数组的长度相同），每一行都按照从左到右递增的顺序排序，每一列都按照从上到下递增的顺序排序。请完成一个函数，输入这样的一个二维数组和一个整数，判断数组中是否含有该整数。
-` 双for遍历，逐步缩小len `
-6. 把一个数组最开始的若干个元素搬到数组的末尾，我们称之为数组的旋转。 输入一个非减排序的数组的一个旋转，输出旋转数组的最小元素。 例如数组{3,4,5,1,2}为{1,2,3,4,5}的一个旋转，该数组的最小值为1。 NOTE：给出的所有元素都大于0，若数组大小为0，请返回0。
+## 数组 15 (6)
+1. 二维数组中的查找
+>在一个二维数组中（每个一维数组的长度相同），每一行都按照从左到右递增的顺序排序，每一列都按照从上到下递增的顺序排序。请完成一个函数，输入这样的一个二维数组和一个整数，判断数组中是否含有该整数。 
+
+` 双for遍历，从左下角开始。大于target向右，小于target向上 `
+```
+public boolean Find(int target, int [][] array) {
+    for(int i = array.length-1; i >= 0; i--){
+        for(int j = 0; j < array[i].length; j++){
+            if(array[i][j] == target) return true;
+            else if(target < array[i][j]) break;
+        }
+    }
+    return false;
+}
+```
+
+6. 旋转数组的最小数字
+>把一个数组最开始的若干个元素搬到数组的末尾，我们称之为数组的旋转。 输入一个非减排序的数组的一个旋转，输出旋转数组的最小元素。 例如数组{3,4,5,1,2}为{1,2,3,4,5}的一个旋转，该数组的最小值为1。 NOTE：给出的所有元素都大于0，若数组大小为0，请返回0。
+
 ` 递归(规则:left>right) `
-13. 输入一个整数数组，实现一个函数来调整该数组中数字的顺序，使得所有的奇数位于数组的前半部分，所有的偶数位于数组的后半部分，并保证奇数和奇数，偶数和偶数之间的相对位置不变。
+```
+public int minNumberInRotateArray(int [] array) {
+    if(array.length == 0) return 0;
+    return helper(array, 0, array.length-1, array.length/2);
+}
+private int helper(int[] array, int left, int right, int mid){
+    if(right - left == 1 && array[left] >= array[right])
+        return array[right];
+    if(array[left] > array[mid]) 
+        return helper(array, left, mid, (left+mid)/2);
+    return helper(array, mid, right, (mid+right)/2);
+}
+```
+
+13. 调整数组顺序使奇数位于偶数前面
+>输入一个整数数组，实现一个函数来调整该数组中数字的顺序，使得所有的奇数位于数组的前半部分，所有的偶数位于数组的后半部分，并保证奇数和奇数，偶数和偶数之间的相对位置不变。
+
 ` 数组缓存偶数 `
-19. 输入一个矩阵，按照从外向里以顺时针的顺序依次打印出每一个数字，例如，如果输入如下4 X 4矩阵： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 则依次打印出数字1,2,3,4,8,12,16,15,14,13,9,5,6,7,11,10.
+```
+public void reOrderArray(int [] array) {
+    int[] arr = new int[array.length];
+    int odd = 0, even = 0;
+    for(int i = 0; i < array.length; i++){
+        if((array[i]&1) == 1) array[odd++] = array[i];
+        else arr[even++] = array[i];
+    }
+    for(int e = 0; e < even; e++)
+        array[odd++] = arr[e];
+}
+```
+
+19. 顺时针打印矩阵
+>输入一个矩阵，按照从外向里以顺时针的顺序依次打印出每一个数字，例如，如果输入如下4 X 4矩阵： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 则依次打印出数字1,2,3,4,8,12,16,15,14,13,9,5,6,7,11,10.
+
 ` 4指针夹逼 `
-28. 数组中有一个数字出现的次数超过数组长度的一半，请找出这个数字。例如输入一个长度为9的数组{1,2,3,2,2,2,5,4,2}。由于数字2在数组中出现了5次，超过数组长度的一半，因此输出2。如果不存在则输出0。
-` HashMap计数 `
-30. 连续子向量最大和。例如:{6,-3,-2,7,-15,1,2,2},连续子向量的最大和为8(从第0个开始,到第3个为止)。给一个数组，返回它的最大连续子序列的和.(子向量的长度至少是1)
-` 双记录，sum，maxsum `
-32. 输入一个正整数数组，把数组里所有数字拼接起来排成一个数，打印能拼接出的所有数字中最小的一个。例如输入数组{3，32，321}，则打印出这三个数字能排成的最小数字为321323。
-` sort后，拼接，比较 `
+
+28. 数组中出现次数超过一半的数字
+>数组中有一个数字出现的次数超过数组长度的一半，请找出这个数字。例如输入一个长度为9的数组{1,2,3,2,2,2,5,4,2}。由于数字2在数组中出现了5次，超过数组长度的一半，因此输出2。如果不存在则输出0。
+
+` 打擂台算法 求出出现频率最高的数字;再1轮计数确认该数字是否超过数组长度一半 `
+```
+public int MoreThanHalfNum_Solution(int [] array) {
+    int num = 0, count = 0;
+    for(Integer i : array){
+        if(count <= 0) num = i;
+        if(num == i) count++;
+        else count--;
+    }
+    count = 0;
+    for(Integer i : array) if(num == i) count++;
+    return count > array.length/2 ? num : 0;
+}
+```
+
+30. 连续子数组的最大和
+>连续子向量最大和。例如:{6,-3,-2,7,-15,1,2,2},连续子向量的最大和为8(从第0个开始,到第3个为止)。给一个数组，返回它的最大连续子序列的和.(子向量的长度至少是1)
+
+` 双记录(sum，maxSum) `
+```
+public int FindGreatestSumOfSubArray(int[] array) {
+    int sum = 0, maxSum = Integer.MIN_VALUE;
+    for(Integer i : array){
+        if((sum += i) > maxSum) maxSum = sum;
+        else if(sum < 0) sum = 0;
+    }
+    return maxSum;
+}
+```
+
+32. 把数组排成最小的数
+>输入一个正整数数组，把数组里所有数字拼接起来排成一个数，打印能拼接出的所有数字中最小的一个。例如输入数组{3，32，321}，则打印出这三个数字能排成的最小数字为321323。
+
+` sort后，拼接，比较。String,各种数字类型互转：目标数据类型.valueOf(); `
+```
+public String PrintMinNumber(int [] numbers) {
+    Arrays.sort(numbers);
+    String result = "";
+    for(Integer num : numbers){
+        if(Long.valueOf(result+num) < Long.valueOf(num+result))
+            result = result + num;
+        else result = num + result;
+    }
+    return result;
+}
+```
+
 35. 在数组中的两个数字，如果前面一个数字大于后面的数字，则这两个数字组成一个逆序对。输入一个数组,求出这个数组中的逆序对的总数P。并将P对1000000007取模的结果输出。 即输出P%1000000007
 ` 倒序merge sort `
 ----
@@ -54,11 +226,43 @@
 ` 递归 `
 ----
 
-## 字符串 9
-2. 请实现一个函数，将一个字符串中的每个空格替换成“%20”。例如，当字符串为We Are Happy.则经过替换之后的字符串为We%20Are%20Happy。
-` .replaceAll(old, new) `
-27. 输入一个字符串,按字典序打印出该字符串中字符的所有排列。例如输入字符串abc,则打印出由字符a,b,c所能排列出来的所有字符串abc,acb,bac,bca,cab和cba。
+## 字符串 9 (2)
+2. 替换空格
+>请实现一个函数，将一个字符串中的每个空格替换成“%20”。例如，当字符串为We Are Happy. 则经过替换之后的字符串为We%20Are%20Happy。
+
+` StringBuffer操作：.length(); .charAt(int index); .delete(int start, int end);  .insert(int index, String s)`
+```
+public String replaceSpace(StringBuffer str) {
+    for(int i = str.length()-1; i >= 0; i--){
+        if(str.charAt(i) == ' '){
+            str.delete(i,i+1);
+            str.insert(i,"%20");
+        }
+    }
+    return str.toString();
+}
+```
+
+27. 字符串的排列
+>输入一个字符串,按字典序打印出该字符串中字符的所有排列。例如输入字符串abc,则打印出由字符a,b,c所能排列出来的所有字符串abc,acb,bac,bca,cab和cba。
+
 ` 递归，DFS `
+```
+ArrayList<String> result = new ArrayList<String>();
+public ArrayList<String> Permutation(String str) {
+    if(str.length() == 0) return result;
+    helper(str, "");
+    return result;
+}
+private void helper(String choice, String str){
+    if(choice.length() == 0 && !result.contains(str)) result.add(str);
+    for(int i = 0; i < choice.length(); i++){
+        String newChoice = choice.substring(0,i) + choice.substring(i+1,choice.length());
+        helper(newChoice, str+choice.charAt(i));
+    }
+}
+```
+
 34. 在一个字符串(0<=字符串长度<=10000，全部由字母组成)中找到第一个只出现一次的字符,并返回它的位置, 如果没有则返回 -1（需要区分大小写）.
 ` HashMap计数 `
 43. 汇编语言中有一种移位指令叫做循环左移（ROL），现在有个简单的任务，就是用字符串模拟这个指令的运算结果。对于一个给定的字符序列S，请你把其循环左移K位后的序列输出。例如，字符序列S=”abcXYZdef”,要求输出循环左移3位后的结果，即“XYZdefabc”。是不是很简单？OK，搞定它！
@@ -75,20 +279,101 @@
 ----
 
 ## 二叉树 15
-4. 输入某二叉树的前序遍历和中序遍历的结果，请重建出该二叉树。假设输入的前序遍历和中序遍历的结果中都不含重复的数字。例如输入前序遍历序列{1,2,4,7,3,5,6,8}和中序遍历序列{4,7,2,1,5,3,8,6}，则重建二叉树并返回。
+4. 重建二叉树
+>输入某二叉树的前序遍历和中序遍历的结果，请重建出该二叉树。假设输入的前序遍历和中序遍历的结果中都不含重复的数字。例如输入前序遍历序列{1,2,4,7,3,5,6,8}和中序遍历序列{4,7,2,1,5,3,8,6}，则重建二叉树并返回。
+
 ` 前序遍历，中序遍历，特征 `
-17. 输入两棵二叉树A，B，判断B是不是A的子结构。（ps：我们约定空树不是任意一个树的子结构）
+```
+public TreeNode reConstructBinaryTree(int [] pre, int [] in) {
+    if(pre.length == 0 || in.length == 0) return null;
+    return helper(pre, in, 0, pre.length, 0, in.length);
+}
+private TreeNode helper(int[] pre, int[] in, int preLeft, int preRight, int inLeft, int inRight){
+    TreeNode node = null;
+    for(int i = inLeft; i < inRight; i++){
+        if(in[i] == pre[preLeft]){
+            node = new TreeNode(pre[preLeft]);
+            if(preRight > preLeft+1){
+                node.left = helper(pre, in, preLeft+1, preLeft+(i-inLeft)+1, inLeft, i);
+                node.right = helper(pre, in, preLeft+(i-inLeft)+1, preRight, i+1, inRight);
+            }
+        }
+    }
+    return node;
+}
+```
+
+17. 树的子结构
+>输入两棵二叉树A，B，判断B是不是A的子结构。（ps：我们约定空树不是任意一个树的子结构）
+
 ` 递归 `
-18. 操作给定的二叉树，将其变换为源二叉树的镜像。
+```
+public boolean HasSubtree(TreeNode root1,TreeNode root2) {
+    if(root1 == null || root2 == null) return false;
+    return helper(root1, root2) 
+        || HasSubtree(root1.left, root2) 
+        || HasSubtree(root1.right, root2);
+}
+private boolean helper(TreeNode root1,TreeNode root2){
+    if(root2 == null) return true;
+    else if(root1 == null) return false;
+    return (root1.val==root2.val) 
+        && (helper(root1.left, root2.left)) 
+        && (helper(root1.right, root2.right));
+}
+```
+
+18. 二叉树的镜像
+>操作给定的二叉树，将其变换为源二叉树的镜像。
+
 ` 递归 `
-22. 从上往下打印出二叉树的每个节点，同层节点从左至右打印。
+```
+public void Mirror(TreeNode root) {
+    if(root == null) return;
+    TreeNode temp = root.left;
+    root.left = root.right;
+    root.right = temp;
+    Mirror(root.left);
+    Mirror(root.right);
+}
+```
+
+22. 从上往下打印二叉树
+>从上往下打印出二叉树的每个节点，同层节点从左至右打印。
+
 ` LinkedList逐层遍历 `
-23. 输入一个整数数组，判断该数组是不是某二叉搜索树的后序遍历的结果。如果是则输出Yes,否则输出No。假设输入的数组的任意两个数字都互不相同。
+```
+public ArrayList<Integer> PrintFromTopToBottom(TreeNode root) {
+    LinkedList<TreeNode> stk = new LinkedList<TreeNode>();
+    ArrayList<Integer> arr = new ArrayList<Integer>();
+    if(root == null) return arr;
+    stk.add(root);
+    while(stk.size() > 0){
+        TreeNode node = stk.poll();
+        if(node == null) continue;
+        stk.add(node.left);
+        stk.add(node.right);
+        arr.add(node.val);
+    }
+    return arr;
+}
+```
+
+23. 二叉搜索树的后序遍历序列
+>输入一个整数数组，判断该数组是不是某二叉搜索树的后序遍历的结果。如果是则输出Yes,否则输出No。假设输入的数组的任意两个数字都互不相同。
+
 ` 后序遍历特征 `
-24. 输入一颗二叉树的跟节点和一个整数，打印出二叉树中结点值的和为输入整数的所有路径。路径定义为从树的根结点开始往下一直到叶结点所经过的结点形成一条路径。(注意: 在返回值的list中，数组长度大的数组靠前)
+
+24. 二叉树中和为某一值的路径
+>输入一颗二叉树的跟节点和一个整数，打印出二叉树中结点值的和为输入整数的所有路径。路径定义为从树的根结点开始往下一直到叶结点所经过的结点形成一条路径。(注意: 在返回值的list中，数组长度大的数组靠前)
+
 ` 递归 `
-26. 输入一棵二叉搜索树，将该二叉搜索树转换成一个排序的双向链表。要求不能创建任何新的结点，只能调整树中结点指针的指向。
+
+26. 二叉搜索树与双向链表
+>输入一棵二叉搜索树，将该二叉搜索树转换成一个排序的双向链表。要求不能创建任何新的结点，只能调整树中结点指针的指向。
+
 ` 递归 `
+
 ----
 38. 输入一棵二叉树，求该树的深度。从根结点到叶结点依次经过的结点（含根、叶结点）形成树的一条路径，最长路径的长度为树的深度。
 ` 递归 `
@@ -109,26 +394,52 @@
 ----
 
 ## 栈 3
-5. 用两个栈来实现一个队列，完成队列的Push和Pop操作。 队列中的元素为int类型。
+5. 用两个栈实现队列
+>用两个栈来实现一个队列，完成队列的Push和Pop操作。 队列中的元素为int类型。
+
 ` 使用一个栈作为缓存 `
-20. 定义栈的数据结构，请在该类型中实现一个能够得到栈中所含最小元素的min函数（时间复杂度应为O（1））。
+
+20. 包含min函数的栈
+>定义栈的数据结构，请在该类型中实现一个能够得到栈中所含最小元素的min函数（时间复杂度应为O（1））。
+
 ` 2个Stack, min栈只push小于等于peek的值`
-21. 输入两个整数序列，第一个序列表示栈的压入顺序，请判断第二个序列是否可能为该栈的弹出顺序。假设压入栈的所有数字均不相等。例如序列1,2,3,4,5是某栈的压入顺序，序列4,5,3,2,1是该压栈序列对应的一个弹出序列，但4,3,5,1,2就不可能是该压栈序列的弹出序列。（注意：这两个序列的长度是相等的）
+
+21. 栈的压入、弹出序列
+>输入两个整数序列，第一个序列表示栈的压入顺序，请判断第二个序列是否可能为该栈的弹出顺序。假设压入栈的所有数字均不相等。例如序列1,2,3,4,5是某栈的压入顺序，序列4,5,3,2,1是该压栈序列对应的一个弹出序列，但4,3,5,1,2就不可能是该压栈序列的弹出序列。（注意：这两个序列的长度是相等的）
+
 ` stack模拟 `
+
 ----
 
 ## 数字 12
-7. 大家都知道斐波那契数列，现在要求输入一个整数n，请你输出斐波那契数列的第n项（从0开始，第0项为0）。 n<=39
+7. 斐波那契数列
+>大家都知道斐波那契数列，现在要求输入一个整数n，请你输出斐波那契数列的第n项（从0开始，第0项为0）。 n<=39
+
 ` 循环 `
-11. 输入一个整数，输出该数二进制表示中1的个数。其中负数用补码表示。
+
+11. 二进制中1的个数
+>输入一个整数，输出该数二进制表示中1的个数。其中负数用补码表示。
+
 ` 二进制操作符 `
-12. 给定一个double类型的浮点数base和int类型的整数exponent。求base的exponent次方。
+
+12. 数值的整数次方
+>给定一个double类型的浮点数base和int类型的整数exponent。求base的exponent次方。
+
 ` 递归 `
-29. 输入n个整数，找出其中最小的K个数。例如输入4,5,1,6,2,7,3,8这8个数字，则最小的4个数字是1,2,3,4,。
+
+29. 最小的K个数
+>输入n个整数，找出其中最小的K个数。例如输入4,5,1,6,2,7,3,8这8个数字，则最小的4个数字是1,2,3,4,。
+
 ` size k max heap `
-31. 求出1~13的整数中1出现的次数,并算出100~1300的整数中1出现的次数？为此他特别数了一下1~13中包含1的数字有1、10、11、12、13因此共出现6次,但是对于后面问题他就没辙了。ACMer希望你们帮帮他,并把问题更加普遍化,可以很快的求出任意非负整数区间中1出现的次数（从1 到 n 中1出现的次数）。
-33. 把只包含质因子2、3和5的数称作丑数（Ugly Number）。例如6、8都是丑数，但14不是，因为它包含质因子7。 习惯上我们把1当做是第一个丑数。求按从小到大的顺序的第N个丑数。
+
+31.整数中1出现的次数(从1到n整数中1出现的次数) 
+>求出1~13的整数中1出现的次数,并算出100~1300的整数中1出现的次数？为此他特别数了一下1~13中包含1的数字有1、10、11、12、13因此共出现6次,但是对于后面问题他就没辙了。ACMer希望你们帮帮他,并把问题更加普遍化,可以很快的求出任意非负整数区间中1出现的次数（从1 到 n 中1出现的次数）。
+
+33. 丑数
+>把只包含质因子2、3和5的数称作丑数（Ugly Number）。例如6、8都是丑数，但14不是，因为它包含质因子7。 习惯上我们把1当做是第一个丑数。求按从小到大的顺序的第N个丑数。
+
 ` 数组 `
+
 ----
 41. 小明很喜欢数学,有一天他在做数学作业时,要求计算出9~16的和,他马上就写出了正确答案是100。但是他并不满足于此,他在想究竟有多少种连续的正数序列的和为100(至少包括两个数)。没多久,他就得到另一组连续正数和为100的序列:18,19,20,21,22。现在把问题交给你,你能不能也很快的找出所有和为S的连续正数序列? Good Luck!
 ` 中位数*n `
@@ -143,7 +454,13 @@
 ` max heap, min heap `
 ----
 ## 其他 4
-8. 一只青蛙一次可以跳上1级台阶，也可以跳上2级。求该青蛙跳上一个n级的台阶总共有多少种跳法（先后次序不同算不同的结果）。
-9. 一只青蛙一次可以跳上1级台阶，也可以跳上2级……它也可以跳上n级。求该青蛙跳上一个n级的台阶总共有多少种跳法。
-10. 我们可以用2*1的小矩形横着或者竖着去覆盖更大的矩形。请问用n个2*1的小矩形无重叠地覆盖一个2*n的大矩形，总共有多少种方法？
+8. 跳台阶
+>一只青蛙一次可以跳上1级台阶，也可以跳上2级。求该青蛙跳上一个n级的台阶总共有多少种跳法（先后次序不同算不同的结果）。
+
+9. 变态跳台阶
+>一只青蛙一次可以跳上1级台阶，也可以跳上2级……它也可以跳上n级。求该青蛙跳上一个n级的台阶总共有多少种跳法。
+
+10. 矩形覆盖
+>我们可以用2*1的小矩形横着或者竖着去覆盖更大的矩形。请问用n个2*1的小矩形无重叠地覆盖一个2*n的大矩形，总共有多少种方法？
+
 66. 地上有一个m行和n列的方格。一个机器人从坐标0,0的格子开始移动，每一次只能向左，右，上，下四个方向移动一格，但是不能进入行坐标和列坐标的数位之和大于k的格子。 例如，当k为18时，机器人能够进入方格（35,37），因为3+5+3+7 = 18。但是，它不能进入方格（35,38），因为3+5+3+8 = 19。请问该机器人能够达到多少个格子？
