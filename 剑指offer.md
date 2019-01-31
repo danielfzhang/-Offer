@@ -278,7 +278,7 @@ private void helper(String choice, String str){
 54. 请实现一个函数用来找出字符流中第一个只出现一次的字符。例如，当从字符流中只读出前两个字符"go"时，第一个只出现一次的字符是"g"。当从该字符流中读出前六个字符“google"时，第一个只出现一次的字符是"l"。
 ----
 
-## 二叉树 15
+## 二叉树 15 (7)
 4. 重建二叉树
 >输入某二叉树的前序遍历和中序遍历的结果，请重建出该二叉树。假设输入的前序遍历和中序遍历的结果中都不含重复的数字。例如输入前序遍历序列{1,2,4,7,3,5,6,8}和中序遍历序列{4,7,2,1,5,3,8,6}，则重建二叉树并返回。
 
@@ -363,16 +363,67 @@ public ArrayList<Integer> PrintFromTopToBottom(TreeNode root) {
 >输入一个整数数组，判断该数组是不是某二叉搜索树的后序遍历的结果。如果是则输出Yes,否则输出No。假设输入的数组的任意两个数字都互不相同。
 
 ` 后序遍历特征 `
+```
+public boolean VerifySquenceOfBST(int [] sequence) {
+    if(sequence.length == 0) return false;
+        return helper(sequence, 0, sequence.length-1);
+}
+private boolean helper(int[] seq, int left, int right){
+    if(left >= right) return true;
+    int pivot = left;
+    while(pivot < right && seq[pivot]<seq[right]) pivot++;
+    for(int p = pivot; p < right; p++)
+        if(seq[p]<seq[right]) return false;
+    return helper(seq, left, pivot-1) && helper(seq, pivot, right-1);
+}
+```
 
 24. 二叉树中和为某一值的路径
 >输入一颗二叉树的跟节点和一个整数，打印出二叉树中结点值的和为输入整数的所有路径。路径定义为从树的根结点开始往下一直到叶结点所经过的结点形成一条路径。(注意: 在返回值的list中，数组长度大的数组靠前)
 
 ` 递归 `
+```
+ArrayList<ArrayList<Integer>> result = new ArrayList<ArrayList<Integer>>();
+public ArrayList<ArrayList<Integer>> FindPath(TreeNode root, int target) {
+    if(root != null)
+        helper(root, target, new ArrayList<Integer>());
+    return result;
+}
+private void helper(TreeNode root, int target, ArrayList<Integer> arr){
+    if(root == null) return;
+    target -= root.val;
+    arr.add(root.val);
+    if(root.left==null && root.right==null && target==0){
+        result.add(new ArrayList<Integer>(arr));
+    }else{
+        helper(root.left, target, arr);
+        helper(root.right, target, arr);
+    }
+    arr.remove(arr.size()-1);
+}
+```
 
 26. 二叉搜索树与双向链表
 >输入一棵二叉搜索树，将该二叉搜索树转换成一个排序的双向链表。要求不能创建任何新的结点，只能调整树中结点指针的指向。
 
 ` 递归 `
+```
+TreeNode head = null, pre = null;
+public TreeNode Convert(TreeNode pRootOfTree) {
+    if(pRootOfTree == null) return null;
+    Convert(pRootOfTree.left);
+    if(head == null){
+        head = pRootOfTree;
+        pre = head;
+    }else{
+        pre.right = pRootOfTree;
+        pRootOfTree.left = pre;
+        pre = pRootOfTree;
+    }
+    Convert(pRootOfTree.right);
+    return head;
+}
+```
 
 ----
 38. 输入一棵二叉树，求该树的深度。从根结点到叶结点依次经过的结点（含根、叶结点）形成树的一条路径，最长路径的长度为树的深度。
@@ -393,21 +444,68 @@ public ArrayList<Integer> PrintFromTopToBottom(TreeNode root) {
 ` 全局变量，中序遍历 `
 ----
 
-## 栈 3
+## 栈 3 (3)
 5. 用两个栈实现队列
 >用两个栈来实现一个队列，完成队列的Push和Pop操作。 队列中的元素为int类型。
 
 ` 使用一个栈作为缓存 `
+```
+Stack<Integer> stack1 = new Stack<Integer>();
+Stack<Integer> stack2 = new Stack<Integer>();
+public void push(int node) {
+    stack1.push(node);
+}
+public int pop() {
+    while(!stack1.empty())
+        stack2.push(stack1.pop());
+    int result = stack2.pop();
+    while(!stack2.empty())
+        stack1.push(stack2.pop());
+    return result;
+}
+```
 
 20. 包含min函数的栈
 >定义栈的数据结构，请在该类型中实现一个能够得到栈中所含最小元素的min函数（时间复杂度应为O（1））。
 
 ` 2个Stack, min栈只push小于等于peek的值`
+```
+Stack<Integer> stk = new Stack<Integer>();
+Stack<Integer> min = new Stack<Integer>();
+public void push(int node) {
+    stk.push(node);
+    if(min.empty() || node <= min.peek()) min.push(node);
+}
+public void pop() {
+    if(stk.pop() == min.peek())
+        min.pop();
+}
+public int top() {
+    return stk.peek();
+}
+public int min() {
+    return min.peek();
+}
+```
 
 21. 栈的压入、弹出序列
 >输入两个整数序列，第一个序列表示栈的压入顺序，请判断第二个序列是否可能为该栈的弹出顺序。假设压入栈的所有数字均不相等。例如序列1,2,3,4,5是某栈的压入顺序，序列4,5,3,2,1是该压栈序列对应的一个弹出序列，但4,3,5,1,2就不可能是该压栈序列的弹出序列。（注意：这两个序列的长度是相等的）
 
 ` stack模拟 `
+```
+public boolean IsPopOrder(int [] pushA,int [] popA) {
+    if(pushA.length == 0) return false;
+    ArrayList<Integer> arr = new ArrayList<Integer>();
+    for(int i = 0, j = 0; i < pushA.length;i++){
+        arr.add(pushA[i]);
+        while(arr.size()>0 && arr.get(arr.size()-1) == popA[j]){
+            arr.remove(arr.size()-1);
+            j++;
+        }
+    }
+    return arr.size()==0;
+}
+```
 
 ----
 
@@ -416,29 +514,91 @@ public ArrayList<Integer> PrintFromTopToBottom(TreeNode root) {
 >大家都知道斐波那契数列，现在要求输入一个整数n，请你输出斐波那契数列的第n项（从0开始，第0项为0）。 n<=39
 
 ` 循环 `
+```
+public int Fibonacci(int n) {
+    if(n<1) return 0;
+    if(n<3) return 1;
+    int pre = 1, curr = 1, temp=0;
+    for(int i = 3; i <= n; i++){
+        temp = curr;
+        curr+=pre;
+        pre=temp;
+    }
+    return curr;
+}
+```
 
 11. 二进制中1的个数
 >输入一个整数，输出该数二进制表示中1的个数。其中负数用补码表示。
 
 ` 二进制操作符 `
+```
+public int NumberOf1(int n) {
+    int count = n&1;
+    while(n!=0)
+        count += (n>>>=1)&1;
+    return count;
+}
+```
 
 12. 数值的整数次方
 >给定一个double类型的浮点数base和int类型的整数exponent。求base的exponent次方。
 
 ` 递归 `
+```
+public double Power(double base, int exponent) {
+    int exp = exponent;
+    double result = 1;
+    if(exponent<0) exp *= -1;
+    for(int i = 0; i < exp; i++)
+        result *= base;
+    return exponent < 0 ? 1/result : result;
+}
+```
 
 29. 最小的K个数
 >输入n个整数，找出其中最小的K个数。例如输入4,5,1,6,2,7,3,8这8个数字，则最小的4个数字是1,2,3,4,。
 
-` size k max heap `
+` size k max heap; PriorityQueue<Integer> queue = new PriorityQueue<Integer>(Collections.reverseOrder()); `
+```
+public ArrayList<Integer> GetLeastNumbers_Solution(int [] input, int k) {
+    ArrayList<Integer> arr = new ArrayList<Integer>(k);
+    if(k>input.length) return arr;
+    PriorityQueue<Integer> queue = new PriorityQueue<Integer>(Collections.reverseOrder());
+    for(int i = 0; i < input.length; i++){
+        queue.add(input[i]);
+        if(i >= k) queue.poll();
+    }
+    for(Integer i : queue)
+        arr.add(i);
+    return arr;
+}
+```
 
-31.整数中1出现的次数(从1到n整数中1出现的次数) 
+31. 整数中1出现的次数(从1到n整数中1出现的次数) 
 >求出1~13的整数中1出现的次数,并算出100~1300的整数中1出现的次数？为此他特别数了一下1~13中包含1的数字有1、10、11、12、13因此共出现6次,但是对于后面问题他就没辙了。ACMer希望你们帮帮他,并把问题更加普遍化,可以很快的求出任意非负整数区间中1出现的次数（从1 到 n 中1出现的次数）。
 
 33. 丑数
 >把只包含质因子2、3和5的数称作丑数（Ugly Number）。例如6、8都是丑数，但14不是，因为它包含质因子7。 习惯上我们把1当做是第一个丑数。求按从小到大的顺序的第N个丑数。
 
 ` 数组 `
+
+```
+public int GetUglyNumber_Solution(int index) {
+    if(index <= 1) return index;
+    ArrayList<Integer> arr = new ArrayList<Integer>();
+    arr.add(1);
+    int p2=0, p3=0, p5=0, min=0;
+    for(int i = 1; arr.size() < index; i++){
+        min = Math.min(arr.get(p2)*2, Math.min(arr.get(p3)*3, arr.get(p5)*5));
+        if(arr.get(arr.size()-1) < min) arr.add(min);
+        if(min == arr.get(p2)*2) p2++;
+        else if(min == arr.get(p3)*3) p3++;
+        else if(min == arr.get(p5)*5) p5++;
+    }
+    return min;
+}
+```
 
 ----
 41. 小明很喜欢数学,有一天他在做数学作业时,要求计算出9~16的和,他马上就写出了正确答案是100。但是他并不满足于此,他在想究竟有多少种连续的正数序列的和为100(至少包括两个数)。没多久,他就得到另一组连续正数和为100的序列:18,19,20,21,22。现在把问题交给你,你能不能也很快的找出所有和为S的连续正数序列? Good Luck!
@@ -453,14 +613,55 @@ public ArrayList<Integer> PrintFromTopToBottom(TreeNode root) {
 63. 如何得到一个数据流中的中位数？如果从数据流中读出奇数个数值，那么中位数就是所有数值排序之后位于中间的数值。如果从数据流中读出偶数个数值，那么中位数就是所有数值排序之后中间两个数的平均值。我们使用Insert()方法读取数据流，使用GetMedian()方法获取当前读取数据的中位数。
 ` max heap, min heap `
 ----
-## 其他 4
+## 其他 4 (3)
 8. 跳台阶
 >一只青蛙一次可以跳上1级台阶，也可以跳上2级。求该青蛙跳上一个n级的台阶总共有多少种跳法（先后次序不同算不同的结果）。
+
+` 循环，Fibonacci数列 `
+
+```
+public int JumpFloor(int target) {
+    if(target < 1) return 0;
+    if(target < 3) return target;
+    int pre = 1, curr = 2, temp = 0;
+    for(int i = 3; i <= target; i++){
+        temp = curr;
+        curr += pre;
+        pre = temp;
+    }
+    return curr;
+}
+```
 
 9. 变态跳台阶
 >一只青蛙一次可以跳上1级台阶，也可以跳上2级……它也可以跳上n级。求该青蛙跳上一个n级的台阶总共有多少种跳法。
 
+` 计算前几数列，找规律 `
+
+```
+public int JumpFloorII(int target) {
+    if(target < 1) return 0;
+    return (int)Math.pow(2,target-1);
+}
+```
+
 10. 矩形覆盖
 >我们可以用2*1的小矩形横着或者竖着去覆盖更大的矩形。请问用n个2*1的小矩形无重叠地覆盖一个2*n的大矩形，总共有多少种方法？
+
+` 循环，Fibonacci数列 `
+
+```
+public int RectCover(int target) {
+    if(target < 1) return 0;
+    if(target < 3) return target;
+    int pre = 1, curr = 2, temp = 0;
+    for(int i = 3; i <= target; i++){
+        temp = curr;
+        curr += pre;
+        pre = temp;
+    }
+    return curr;
+}
+```
 
 66. 地上有一个m行和n列的方格。一个机器人从坐标0,0的格子开始移动，每一次只能向左，右，上，下四个方向移动一格，但是不能进入行坐标和列坐标的数位之和大于k的格子。 例如，当k为18时，机器人能够进入方格（35,37），因为3+5+3+7 = 18。但是，它不能进入方格（35,38），因为3+5+3+8 = 19。请问该机器人能够达到多少个格子？
