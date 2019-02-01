@@ -93,12 +93,52 @@ public RandomListNode Clone(RandomListNode pHead){
 }
 ```
 
-36. 输入两个链表，找出它们的第一个公共结点。
+36. 两个链表的第一个公共节点 
+>输入两个链表，找出它们的第一个公共结点。
+
 ` 双指针单向，到底交替 `
-55. 给一个链表，若其中包含环，请找出该链表的环的入口结点，否则，输出null。
+```
+public ListNode FindFirstCommonNode(ListNode pHead1, ListNode pHead2) {
+    if(pHead1 == null) return null;
+    ListNode p1 = pHead1, p2 = pHead2;
+    while(p1 != p2){
+        p1 = (p1==null? pHead2 : p1.next);
+        p2 = (p2==null? pHead1 : p2.next);
+    }
+    return p1;
+}
+```
+55. 链表中环的入口结点 
+>给一个链表，若其中包含环，请找出该链表的环的入口结点，否则，输出null。
+
 ` HashSet `
-56. 在一个排序的链表中，存在重复的结点，请删除该链表中重复的结点，重复的结点不保留，返回链表头指针。 例如，链表1->2->3->3->4->4->5 处理后为 1->2->5
+```
+public ListNode EntryNodeOfLoop(ListNode pHead){
+    HashSet<ListNode> set = new HashSet<ListNode>();
+    for(; pHead != null; pHead = pHead.next){
+        if(set.contains(pHead)) return pHead;
+        else set.add(pHead);
+    }
+    return null;
+}
+```
+56. 删除链表中重复的结点 
+>在一个排序的链表中，存在重复的结点，请删除该链表中重复的结点，重复的结点不保留，返回链表头指针。 例如，链表1->2->3->3->4->4->5 处理后为 1->2->5
+
 ` 递归 `
+```
+public ListNode deleteDuplication(ListNode pHead){
+    if(pHead==null || pHead.next==null) return pHead;
+    if(pHead.val!=pHead.next.val){
+        pHead.next = deleteDuplication(pHead.next);
+        return pHead;
+    }else{
+        while(pHead.next!=null && pHead.val==pHead.next.val)
+            pHead.next = pHead.next.next;
+        return deleteDuplication(pHead.next);
+    }
+}
+```
 ----
 ## 数组 15 (6)
 1. 二维数组中的查找
@@ -212,10 +252,41 @@ public String PrintMinNumber(int [] numbers) {
 ----
 37. 统计一个数字在排序数组中出现的次数。
 ` 二分法 `
-40. 一个整型数组里除了两个数字之外，其他的数字都出现了偶数次。请写程序找出这两个只出现一次的数字。
-` 异或后，分组异或 `
-42. 输入一个递增排序的数组和一个数字S，在数组中查找两个数，使得他们的和正好是S，如果有多对数字的和等于S，输出两个数的乘积最小的。
+40. 数组中只出现一次的数字
+>一个整型数组里除了两个数字之外，其他的数字都出现了偶数次。请写程序找出这两个只出现一次的数字。
+
+` 异或后，以异或结果进行分组异或 `
+```
+public void FindNumsAppearOnce(int [] array,int num1[] , int num2[]) {
+    if(array.length < 2) return;
+    int xor = 0, first1 = 1;
+    for(Integer i : array) xor ^= i;
+    num1[0] = num2[0] = xor;
+    while((xor & first1) == 0) first1 <<= 1;
+    for(Integer i : array)
+        if((i & first1)==0) num2[0] ^= i;
+        else num1[0] ^= i;
+}
+```
+42. 和为S的两个数字
+>输入一个递增排序的数组和一个数字S，在数组中查找两个数，使得他们的和正好是S，如果有多对数字的和等于S，输出两个数的乘积最小的。
+
 ` 双指针夹逼 `
+```
+public ArrayList<Integer> FindNumbersWithSum(int [] array,int sum) {
+    ArrayList<Integer> arr = new ArrayList<Integer>();
+    for(int left=0, right=array.length-1; left<right;){
+        if(array[left]+array[right] > sum) right--;
+        else if(array[left]+array[right] < sum) left++;
+        else{
+            arr.add(array[left]);
+            arr.add(array[right]);
+            break;
+        }
+    }
+    return arr;
+}
+```
 50. 在一个长度为n的数组里的所有数字都在0到n-1的范围内。 数组中某些数字是重复的，但不知道有几个数字是重复的。也不知道每个数字重复几次。请找出数组中任意一个重复的数字。 例如，如果输入长度为7的数组{2,3,1,0,2,5,3}，那么对应的输出是第一个重复的数字2。
 ` hash下标 `
 51. 给定一个数组A[0,1,...,n-1],请构建一个数组B[0,1,...,n-1],其中B中的元素B[i]=A[0]*A[1]*...*A[i-1]*A[i+1]*...*A[n-1]。不能使用除法。
