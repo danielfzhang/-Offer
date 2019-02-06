@@ -61,7 +61,7 @@ public ListNode Merge(ListNode list1,ListNode list2) {
 ```
 
 25. 复杂链表的复制
->输入一个复杂链表（每个节点中有节点值，以及两个指针，一个指向下一个节点，另一个特殊指针指向任意一个节点），返回结果为复制后复杂链表的head。（注意，输出结果中请不要返回参数中的节点引用，否则判题程序会直接返回空）  
+>输入一个复杂链表（每个节点中有节点值，以及两个指针，一个指向下一个节点，另一个特殊指针指向任意一个节点），返回结果为复制后复杂链表的head。（注意，输出结果中请不要返回参数中的节点引用，否则判题程序会直接返回空)   
 ` HashMap记录新创建的next链表，再从HashMap读取链接random链表 `
 ```
 public RandomListNode Clone(RandomListNode pHead){
@@ -186,6 +186,24 @@ public void reOrderArray(int [] array) {
 >输入一个矩阵，按照从外向里以顺时针的顺序依次打印出每一个数字，例如，如果输入如下4 X 4矩阵： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 则依次打印出数字1,2,3,4,8,12,16,15,14,13,9,5,6,7,11,10.  
 ` 4指针夹逼 `
 ```
+public ArrayList<Integer> printMatrix(int [][] matrix) {
+    ArrayList<Integer> arr = new ArrayList<Integer>();
+    int topY=0, botY=matrix.length-1, leftX=0, rightX=matrix[0].length-1;
+    while(leftX<=rightX && topY<=botY){
+        for(int i=leftX; i<=rightX; i++)
+            arr.add(matrix[topY][i]);
+        for(int i=++topY; i<=botY; i++)
+            arr.add(matrix[i][rightX]);
+        if(topY<=botY)
+            for(int i=--rightX; i>=leftX; i--)
+                arr.add(matrix[botY][i]);
+        if(leftX<=rightX)
+            for(int i=--botY; i>=topY; i--)
+                arr.add(matrix[i][leftX]);
+        leftX++;
+    }
+    return arr;
+}
 ```
 
 28. 数组中出现次数超过一半的数字
@@ -239,6 +257,31 @@ public String PrintMinNumber(int [] numbers) {
 >在数组中的两个数字，如果前面一个数字大于后面的数字，则这两个数字组成一个逆序对。输入一个数组,求出这个数组中的逆序对的总数P。并将P对1000000007取模的结果输出。 即输出P%1000000007   
 ` 倒序merge sort `
 ```
+public int InversePairs(int [] array) {
+    return helper(array, 0, array.length);
+}
+private int helper(int[] arr, int left, int right){
+    int count=0, mid=(left+right)/2;
+    int[] cache = new int[right-left];
+    if(left<right-1){
+        count+= helper(arr, left, mid);
+        count+= helper(arr, mid, right);
+    }
+    for(int l=left,r=mid,i=0; l<mid || r<right;){
+        if(l==mid) cache[i++] = arr[r++];
+        else if(r==right) cache[i++] = arr[l++];
+        else if(arr[l]<=arr[r]) cache[i++] = arr[r++];
+        else{
+            cache[i++] = arr[l++];
+            count+=right-r;
+            if(count>1000000007) 
+                count=count%1000000007;
+        } 
+    }
+    for(int c=0,a=left; a<right; c++,a++)
+        arr[a] = cache[c];
+    return count;
+}
 ```
 
 ----
