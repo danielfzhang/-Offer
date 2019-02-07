@@ -1,5 +1,7 @@
 # 剑指offer
 
+19 to be done
+
 ## 链表 8
 3. 从尾到头打印链表
 >输入一个链表，按链表值从尾到头的顺序返回一个ArrayList。  
@@ -287,8 +289,23 @@ private int helper(int[] arr, int left, int right){
 ----
 37. 数字在排序数组中出现的次数
 >统计一个数字在排序数组中出现的次数。   
-` 二分法 `
+` 二分法.取得 target+0.5 和target-0.5的位置 `
 ```
+public int GetNumberOfK(int [] array , int k) {
+    return helper(array, k+0.5) - helper(array, k-0.5);
+}
+private int helper(int[] arr, double target){
+    int left=0, right=arr.length-1, mid=arr.length/2;
+    while(left<=right){
+        mid = (left+right)/2;
+        if(target>arr[mid]){
+            left=mid+1;
+        }else if(target<arr[mid]){
+            right=mid-1;
+        }
+    }
+    return left;
+}
 ```
 
 40. 数组中只出现一次的数字
@@ -330,24 +347,90 @@ public ArrayList<Integer> FindNumbersWithSum(int [] array,int sum) {
 >在一个长度为n的数组里的所有数字都在0到n-1的范围内。 数组中某些数字是重复的，但不知道有几个数字是重复的。也不知道每个数字重复几次。请找出数组中任意一个重复的数字。 例如，如果输入长度为7的数组{2,3,1,0,2,5,3}，那么对应的输出是第一个重复的数字2。   
 ` hash下标 `
 ```
+public boolean duplicate(int numbers[],int length,int [] duplication) {
+    for(int i=0; i<length; ){
+        if(numbers[i] == i) i++;
+        else if(numbers[i] != numbers[numbers[i]]){
+            int temp = numbers[i];
+            numbers[i] = numbers[temp];
+            numbers[temp] = temp;
+        }else{
+            duplication[0] = numbers[i];
+            return true;
+        }
+    }
+    return false;
+}
 ```
 
 51. 构建乘积数组
 >给定一个数组A[0,1,...,n-1],请构建一个数组B[0,1,...,n-1],其中B中的元素B[i]=A[0]*A[1]*...*A[i-1]*A[i+1]*...*A[n-1]。不能使用除法。   
-` 动态规划 `
+` 动态规划;画矩阵图理解 `
 ```
+public int[] multiply(int[] A) {
+    int[] B = new int[A.length];
+    B[0] = 1;
+    for(int i=1; i<A.length; i++)
+        B[i] = B[i-1] * A[i-1];
+    int cacheRight = 1;
+    for(int i=A.length-2; i>=0; i--){
+        cacheRight *= A[i+1];
+        B[i] *= cacheRight;
+    }
+    return B;
+}
 ```
 
 64. 滑动窗口的最大值
 >给定一个数组和滑动窗口的大小，找出所有滑动窗口里数值的最大值。例如，如果输入数组{2,3,4,2,6,2,5,1}及滑动窗口的大小3，那么一共存在6个滑动窗口，他们的最大值分别为{4,4,6,6,6,5}； 针对数组{2,3,4,2,6,2,5,1}的滑动窗口有以下6个： {[2,3,4],2,6,2,5,1}， {2,[3,4,2],6,2,5,1}， {2,3,[4,2,6],2,5,1}， {2,3,4,[2,6,2],5,1}， {2,3,4,2,[6,2,5],1}， {2,3,4,2,6,[2,5,1]}。   
 ` LinkedList `
 ```
+public ArrayList<Integer> maxInWindows(int [] num, int size){
+    LinkedList<Integer> lst = new LinkedList<Integer>();
+    ArrayList<Integer> arr = new ArrayList<Integer>();
+    if(size>0){
+        for(int i=0; i<num.length; i++){
+            if(lst.size()==0) lst.add(i);
+            else{
+                if(i-lst.peekFirst()>=size) lst.pollFirst();
+                while(lst.size()>0 && num[i] > num[lst.peekLast()]) lst.pollLast();
+                lst.add(i);
+            }
+            if(i>=size-1) arr.add(num[lst.peekFirst()]);
+        }
+    }
+    
+    return arr;
+}
 ```
 
 65. 矩阵中的路径
 >请设计一个函数，用来判断在一个矩阵中是否存在一条包含某字符串所有字符的路径。路径可以从矩阵中的任意一个格子开始，每一步可以在矩阵中向左，向右，向上，向下移动一个格子。如果一条路径经过了矩阵中的某一个格子，则之后不能再次进入这个格子。 例如 a b c e s f c s a d e e 这样的3 X 4 矩阵中包含一条字符串"bcced"的路径，但是矩阵中不包含"abcb"路径，因为字符串的第一个字符b占据了矩阵中的第一行第二个格子之后，路径不能再次进入该格子。   
 ` 递归 `
 ```
+public boolean hasPath(char[] matrix, int rows, int cols, char[] str){
+    boolean[] passby = new boolean[matrix.length];
+    for(int i=0; i<matrix.length; i++)
+        if(matrix[i]==str[0]){
+            passby[i]=true;
+            if(helper(matrix, rows, cols, str, i, 1, passby))
+                return true;
+            passby[i]=false;
+        }
+    return false;
+}
+private boolean helper(char[] matrix, int rows, int cols, char[] str, int mIndex, int strIndex, boolean[] passby){
+    if(str.length == strIndex) return true;
+    for(Integer pos:new int[]{mIndex-1,mIndex+1,mIndex-cols,mIndex+cols}){
+        if(pos>=0 && pos<matrix.length && !passby[pos] && matrix[pos]==str[strIndex]){
+            passby[pos] = true;
+            if(helper(matrix, rows, cols, str, pos, strIndex+1, passby))
+                return true;
+            passby[pos] = false;
+        }
+    }
+    return false;
+}
 ```
 
 ----
@@ -390,24 +473,62 @@ private void helper(String choice, String str){
 >在一个字符串(0<=字符串长度<=10000，全部由字母组成)中找到第一个只出现一次的字符,并返回它的位置, 如果没有则返回 -1（需要区分大小写）.   
 ` HashMap计数 `
 ```
+public int FirstNotRepeatingChar(String str) {
+    HashMap<Character, Integer> map = new HashMap<Character, Integer>();
+    for(Character c:str.toCharArray())
+        map.put(c, map.getOrDefault(c,0)+1);
+    for(int i=0; i<str.length(); i++)
+        if(map.get(str.charAt(i))==1)
+            return i;
+    return -1;
+}
 ```
 
 43. 左旋转字符
 >汇编语言中有一种移位指令叫做循环左移（ROL），现在有个简单的任务，就是用字符串模拟这个指令的运算结果。对于一个给定的字符序列S，请你把其循环左移K位后的序列输出。例如，字符序列S=”abcXYZdef”,要求输出循环左移3位后的结果，即“XYZdefabc”。是不是很简单？OK，搞定它！   
 ` .substring(start,len) `
 ```
+public String LeftRotateString(String str,int n) {
+    if(str.length()==0 || str.length()<=n) return str;
+    return str.substring(n,str.length())+str.substring(0,n);
+}
 ```
 
 44. 翻转单词顺序列
 >牛客最近来了一个新员工Fish，每天早晨总是会拿着一本英文杂志，写些句子在本子上。同事Cat对Fish写的内容颇感兴趣，有一天他向Fish借来翻看，但却读不懂它的意思。例如，“student. a am I”。后来才意识到，这家伙原来把句子单词的顺序翻转了，正确的句子应该是“I am a student.”。Cat对一一的翻转这些单词顺序可不在行，你能帮助他么？
 ` .substring() `
 ```
+public String ReverseSentence(String str) {
+    String[] splits = str.split(" ");
+    if(splits.length==0) return str;
+    String result = "";
+    for(int i=splits.length-1; i>=0; i--)
+        result += splits[i]+" ";
+    return result.substring(0,result.length()-1);
+}
 ```
 
 49. 把字符串转换成整数
 >将一个字符串转换成一个整数(实现Integer.valueOf(string)的功能，但是string不符合数字要求时返回0)，要求不能使用字符串转换整数的库函数。 数值为0或者字符串不是一个合法的数值则返回0。   
 ` .charAt() `
 ```
+public int StrToInt(String str) {
+    if(str.length()==0) return 0;
+    int num=0, begin=0;
+    boolean negative = false;
+    if(str.charAt(0)=='-') negative=true;
+    if(negative || str.charAt(0)=='+') begin=1;
+    for(int i=begin; i<str.length(); i++){
+        int n = str.charAt(i) - '0';
+        if(n>=0 && n<=9){
+            if(negative)
+                num-= Math.pow(10, str.length()-1-i) * n;
+            else num+= Math.pow(10, str.length()-1-i) * n;
+        }
+        else return 0;
+    }
+    return num;
+}
 ```
 
 52. 正则表达式匹配
