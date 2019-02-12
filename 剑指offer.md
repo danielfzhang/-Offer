@@ -1,6 +1,6 @@
 # 剑指offer
 
-19 to be done
+4 to be done
 
 ## 链表 8
 3. 从尾到头打印链表
@@ -532,20 +532,69 @@ public int StrToInt(String str) {
 ```
 
 52. 正则表达式匹配
->请实现一个函数用来匹配包括'.'和'*'的正则表达式。模式中的字符'.'表示任意一个字符，而'*'表示它前面的字符可以出现任意次（包含0次）。 在本题中，匹配是指字符串的所有字符匹配整个模式。例如，字符串"aaa"与模式"a.a"和"ab*ac*a"匹配，但是与"aa.a"和"ab*a"均不匹配   
-` 递归 `
+>请实现一个函数用来匹配包括'.'和'\*'的正则表达式。模式中的字符'.'表示任意一个字符，而'\*'表示它前面的字符可以出现任意次（包含0次）。 在本题中，匹配是指字符串的所有字符匹配整个模式。例如，字符串"aaa"与模式"a.a"和"ab\*ac\*a"匹配，但是与"aa.a"和"ab\*a"均不匹配   
+` 递归;用pattern来匹配str; `
 ```
+public boolean match(char[] str, char[] pattern){
+    if(str==null || pattern==null) return true;
+    return helper(str, 0, pattern, 0);
+}
+private boolean helper(char[] str, int s, char[] pattern, int p){
+    if(p==pattern.length) return s==str.length;
+    if(p+1<pattern.length && pattern[p+1]=='*'){
+        if(s<str.length && (pattern[p]=='.' || pattern[p]==str[s]))
+            return helper(str, s+1, pattern, p) || helper(str, s+1, pattern, p+2) ||
+                helper(str, s, pattern, p+2);
+        return helper(str, s, pattern, p+2);
+    }
+    if(s<str.length && (pattern[p]=='.' || pattern[p]==str[s])) 
+        return helper(str, s+1, pattern, p+1);
+    return false;
+}
 ```
 
 53. 表示数值的字符串
 >请实现一个函数用来判断字符串是否表示数值（包括整数和小数）。例如，字符串"+100","5e2","-123","3.1416"和"-1E-16"都表示数值。 但是"12e","1a3.14","1.2.3","+-5"和"12e+4.3"都不是。
-` 正则表达式 `
+` 写出正则表达式，转换成if,while判断 `
 ```
+public boolean isNumeric(char[] str) {
+    //.matches("[\\+-]?\\d*(\\.\\d*)?([eE][\\+-]?\\d+)?")
+    int i = 0;
+    if(i<str.length && (str[i]=='+' || str[i]=='-')) i++;
+    while(i<str.length && str[i]>='0' && str[i]<='9') i++;
+    if(i<str.length && str[i]=='.'){
+        i++;
+        if(i==str.length) return false;
+        while(i<str.length && str[i]>='0' && str[i]<='9') i++;
+    }
+    if(i<str.length && (str[i]=='e' || str[i]=='E')){
+        i++;
+        if(i==str.length) return false;
+        if(i<str.length && (str[i]=='+' || str[i]=='-')) i++;
+        while(i<str.length && str[i]>='0' && str[i]<='9') i++;
+    } 
+    return i==str.length;
+}
 ```
 
 54. 字符流中第一个不重复的字符
->请实现一个函数用来找出字符流中第一个只出现一次的字符。例如，当从字符流中只读出前两个字符"go"时，第一个只出现一次的字符是"g"。当从该字符流中读出前六个字符“google"时，第一个只出现一次的字符是"l"。   
+>请实现一个函数用来找出字符流中第一个只出现一次的字符。例如，当从字符流中只读出前两个字符"go"时，第一个只出现一次的字符是"g"。当从该字符流中读出前六个字符“google"时，第一个只出现一次的字符是"l"。  
+` 数组用来计数，insert计数为0的字符。抛掉循环链表头计数不为1的字符，并返回计数为1的字符 `
 ```
+int[] charArr = new int[128];
+LinkedList<Integer> lst = new LinkedList<Integer>();
+public void Insert(char ch)
+{
+    int index = (int) ch;
+    if(charArr[index]==0) lst.add(index);
+    charArr[index] = (charArr[index]==0 ? 1 : 2);
+}
+public char FirstAppearingOnce()
+{
+    while(lst.size()>0 && charArr[lst.peekFirst()]!=1)
+        lst.pollFirst();
+    return lst.size()==0 ? '#' : (char)(lst.peekFirst()-0);
+}
 ```
 ----
 
@@ -694,31 +743,111 @@ public TreeNode Convert(TreeNode pRootOfTree) {
 >输入一棵二叉树，求该树的深度。从根结点到叶结点依次经过的结点（含根、叶结点）形成树的一条路径，最长路径的长度为树的深度。   
 ` 递归 `
 ```
+public int TreeDepth(TreeNode root) {
+    if(root==null) return 0;
+    int left = TreeDepth(root.left), right = TreeDepth(root.right);
+    return 1 + (left>=right ? left : right);
+}
 ```
 39. 平衡树
 >输入一棵二叉树，判断该二叉树是否是平衡二叉树。   
 ` 递归(规则:返回深度并判断，不平衡为-1) `
 ```
+public boolean IsBalanced_Solution(TreeNode root) {
+    return helper(root)!=-1;
+}
+private int helper(TreeNode root){
+    if(root==null) return 0;
+    int left=helper(root.left), right=helper(root.right);
+    if(left==-1 || right==-1 || Math.abs(left-right)>1) return -1;
+    return 1 + (left>=right ? left : right);
+}
 ```
 57. 二叉树的下一个结点
 >给定一个二叉树和其中的一个结点，请找出中序遍历顺序的下一个结点并且返回。注意，树中的结点不仅包含左右子结点，同时包含指向父结点的指针。  
 ` 右孩子的最左node > 父节点是父节点的父节点的左孩子 > null `
 ```
+public TreeLinkNode GetNext(TreeLinkNode pNode){
+    if(pNode == null) return null;
+    if(pNode.right != null){
+        pNode = pNode.right;
+        while(pNode.left != null) pNode = pNode.left;
+        return pNode;
+    }
+    while(pNode.next!=null && pNode != pNode.next.left) pNode = pNode.next;
+    if(pNode.next!=null && pNode == pNode.next.left) return pNode.next;
+    return null;
+}
 ```
 58. 对称的二叉树
 >请实现一个函数，用来判断一颗二叉树是不是对称的。注意，如果一个二叉树同此二叉树的镜像是同样的，定义其为对称的。  
-`  `
+` 递归;对称性质 `
 ```
+boolean isSymmetrical(TreeNode pRoot){
+    if(pRoot==null) return true;
+    return helper(pRoot.left, pRoot.right);
+}
+private boolean helper(TreeNode left, TreeNode right){
+    if(left==right) return true;
+    if(left==null || right==null) return false;
+    return (left.val==right.val) && helper(left.left, right.right) &&
+        helper(left.right, right.left);
+}
 ```
 59. 按之字形顺序打印二叉树
 >请实现一个函数按照之字形打印二叉树，即第一行按照从左到右的顺序打印，第二层按照从右至左的顺序打印，第三行按照从左到右的顺序打印，其他行以此类推。  
-` 逐层遍历 `
+` 逐层从左到右遍历;当i为单数时，对数组进行倒序处理 `
 ```
+public ArrayList<ArrayList<Integer>> Print(TreeNode pRoot){
+    ArrayList<ArrayList<Integer>> result = new ArrayList<ArrayList<Integer>>();
+    if(pRoot == null) return result;
+    LinkedList<TreeNode> queue = new LinkedList<TreeNode>();
+    queue.add(pRoot);
+    queue.add(null);
+    for(int i=0; queue.peek()!=null;i++){
+        ArrayList<Integer> arr = new ArrayList<Integer>();
+        while(queue.peek()!=null){
+            TreeNode node = queue.pollFirst();
+            if(node.left!=null) queue.add(node.left);
+            if(node.right!=null) queue.add(node.right);
+            arr.add(node.val);
+        }
+        queue.add(queue.poll());
+        if((i&1)==1){
+            for(int j=0; j<arr.size()/2; j++){
+                int temp = arr.get(j);
+                arr.set(j,arr.get(arr.size()-j-1));
+                arr.set(arr.size()-j-1, temp);
+            }
+        }
+        result.add(arr);
+    }
+    return result;
+}
 ```
 60. 把二叉树打印成多行
 >从上到下按层打印二叉树，同一层结点从左至右输出。每一层输出一行。  
 ` 逐层遍历 `
 ```
+ArrayList<ArrayList<Integer> > Print(TreeNode pRoot) {
+    ArrayList<ArrayList<Integer>> result = new ArrayList<ArrayList<Integer>>();
+    if(pRoot == null) return result;
+    LinkedList<TreeNode> queue = new LinkedList<TreeNode>();
+    queue.add(pRoot);
+    queue.add(null);
+    while(queue.peek()!=null){
+        ArrayList<Integer> arr = new ArrayList<Integer>();
+        while(queue.peek()!=null){
+            TreeNode node = queue.pollFirst();
+            if(node.left!=null) queue.add(node.left);
+            if(node.right!=null) queue.add(node.right);
+            arr.add(node.val);
+        }
+        queue.add(queue.poll());
+        result.add(arr);
+    }
+    return result;
+}
 ```
 61. 序列化二叉树
 >请实现两个函数，分别用来序列化和反序列化二叉树
@@ -729,6 +858,19 @@ public TreeNode Convert(TreeNode pRootOfTree) {
 >给定一棵二叉搜索树，请找出其中的第k小的结点。例如， （5，3，7，2，4，6，8）    中，按结点数值大小顺序第三小结点的值为4。
 ` 全局变量，中序遍历 `
 ```
+int theK = 0;
+TreeNode KthNode(TreeNode pRoot, int k)
+{
+    if(pRoot!=null){
+        TreeNode node = KthNode(pRoot.left, k);
+        if(node != null) return node;
+        theK++;
+        if(theK==k) return pRoot;
+        node = KthNode(pRoot.right, k);
+        if(node != null) return node;
+    }
+    return null;
+}
 ```
 ----
 
@@ -891,26 +1033,75 @@ public int GetUglyNumber_Solution(int index) {
 >LL今天心情特别好,因为他去买了一副扑克牌,发现里面居然有2个大王,2个小王(一副牌原本是54张^_^)...他随机从中抽出了5张牌,想测测自己的手气,看看能不能抽到顺子,如果抽到的话,他决定去买体育彩票,嘿嘿！！“红心A,黑桃3,小王,大王,方片5”,“Oh My God!”不是顺子.....LL不高兴了,他想了想,决定大\小 王可以看成任何数字,并且A看作1,J为11,Q为12,K为13。上面的5张牌就可以变成“1,2,3,4,5”(大小王分别看作2和4),“So Lucky!”。LL决定去买体育彩票啦。 现在,要求你使用这幅牌模拟上面的过程,然后告诉我们LL的运气如何， 如果牌能组成顺子就输出true，否则就输出false。为了方便起见,你可以认为大小王是0。  
 ` difference == count of 0 `
 ```
+public boolean isContinuous(int [] numbers) {
+    if(numbers.length==0) return false;
+    Arrays.sort(numbers);
+    int count0 = 0, sum = 0;
+    while(numbers[count0]==0) count0++;
+    for(int i=count0+1; i<numbers.length; i++)
+        sum += Math.abs(numbers[i] - numbers[i-1])-1;
+    return count0==sum || count0>=4;
+}
 ```
 46. 孩子们的游戏(圆圈中最后剩下的数)
 >每年六一儿童节,牛客都会准备一些小礼物去看望孤儿院的小朋友,今年亦是如此。HF作为牛客的资深元老,自然也准备了一些小游戏。其中,有个游戏是这样的:首先,让小朋友们围成一个大圈。然后,他随机指定一个数m,让编号为0的小朋友开始报数。每次喊到m-1的那个小朋友要出列唱首歌,然后可以在礼品箱中任意的挑选礼物,并且不再回到圈中,从他的下一个小朋友开始,继续0...m-1报数....这样下去....直到剩下最后一个小朋友,可以不用表演,并且拿到牛客名贵的“名侦探柯南”典藏版(名额有限哦!!^_^)。请你试着想下,哪个小朋友会得到这份礼品呢？(注：小朋友的编号是从0到n-1)   
-` `
+` linkedlist模拟 `
 ```
+public int LastRemaining_Solution(int n, int m) {
+    if(n==0) return -1;
+    LinkedList<Integer> lst = new LinkedList<Integer>();
+    for(int i=0; i<n; i++) lst.add(i);
+    int i = 0;
+    while(lst.size()>1)
+        lst.remove(i=((i+m-1)%n--));
+    return lst.peek();
+}
 ```
 47. 求1+2+3+...+n 
 >求1+2+3+...+n，要求不能使用乘除法、for、while、if、else、switch、case等关键字及条件判断语句（A?B:C）。   
 ` 逻辑与短路 `
 ```
+public int Sum_Solution(int n) {
+    int num = n;
+    boolean b = (n>0) && (num+=Sum_Solution(n-1))>0;
+    return num;
+}
 ```
 48. 不用加减乘除做加法
 >写一个函数，求两个整数之和，要求在函数体内不得使用+、-、*、/四则运算符号。   
-` 异或得相加，逻辑与并左移1位得进位 `  
+` 两个数异或：相当于每一位相加，而不考虑进位；两个数相与，并左移一位：相当于求得进位；将上述两步的结果相加 `  
 ```
+public int Add(int num1,int num2) {
+    while(num2!=0){
+        int sum = num1 ^ num2;
+        int carry = (num1 & num2) << 1;
+        num1 = sum;
+        num2 = carry;
+    }
+    return num1;
+}
 ```
 63. 数据流中的中位数 
 >如何得到一个数据流中的中位数？如果从数据流中读出奇数个数值，那么中位数就是所有数值排序之后位于中间的数值。如果从数据流中读出偶数个数值，那么中位数就是所有数值排序之后中间两个数的平均值。我们使用Insert()方法读取数据流，使用GetMedian()方法获取当前读取数据的中位数。   
 ` max heap, min heap `
 ```
+PriorityQueue<Integer> maxHeap = new PriorityQueue<Integer>(Collections.reverseOrder());
+PriorityQueue<Integer> minHeap = new PriorityQueue<Integer>();
+public void Insert(Integer num) {
+    if(maxHeap.size()==0){
+        maxHeap.add(num);
+        return;
+    }
+    if(num<maxHeap.peek()) maxHeap.add(num);
+    else minHeap.add(num);
+    if(minHeap.size() > maxHeap.size()+1) maxHeap.add(minHeap.poll());
+    if(maxHeap.size() > minHeap.size()+1) minHeap.add(maxHeap.poll());
+}
+public Double GetMedian() {
+    if(minHeap.size() > maxHeap.size()) return (double)minHeap.peek();
+    if(maxHeap.size() > minHeap.size()) return (double)maxHeap.peek();
+    return (maxHeap.peek() + minHeap.peek())/2.0;
+}
 ```
 ----
 ## 其他 4
